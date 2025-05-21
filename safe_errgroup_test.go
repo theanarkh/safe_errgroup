@@ -257,6 +257,21 @@ func TestPanic(t *testing.T) {
 	g.SafeWait()
 }
 
+func TestWaitPanic(t *testing.T) {
+	handler := WithHandler(func(_ context.Context, err *error) {
+		if e := recover(); e != nil {
+			if err != nil {
+				panic(fmt.Errorf("custom handler panic: %v", e))
+			}
+		}
+	})
+	g := New(handler)
+	g.SafeGo(context.Background(), func() error {
+		panic("panic should be recovered")
+	})
+	g.SafeWait()
+}
+
 func TestNew(t *testing.T) {
 	handler := WithHandler(func(_ context.Context, err *error) {
 		if e := recover(); e != nil {

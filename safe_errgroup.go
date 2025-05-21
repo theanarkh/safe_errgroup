@@ -64,8 +64,13 @@ func (e *ErrGroup) SafeTryGo(ctx context.Context, f func() error) bool {
 	})
 }
 
-func (e *ErrGroup) SafeWait() error {
-	err := e.Wait()
+func (e *ErrGroup) SafeWait() (err error) {
+	defer func() {
+		if e := recover(); e != nil {
+			err = fmt.Errorf("panic happen: %v", e)
+		}
+	}()
+	err = e.Wait()
 	if e.cancel != nil {
 		e.cancel(err)
 	}
